@@ -1,6 +1,5 @@
 import logging
 from abc import ABC, abstractmethod
-import yaml
 import requests
 from io import StringIO
 import csv
@@ -19,6 +18,8 @@ FOCUS_URL = os.getenv("BCB_FOCUS_URL")
 DOLAR_URL = os.getenv("BCB_DOLAR_URL")
 IPCA_URL = os.getenv("IBGE_IPCA_URL")
 TESOURO_TAXAS_URL = os.getenv("TESOURO_TAXAS_URL")
+
+
 # ============== Classe Base ==============
 class IFetchData(ABC):
 

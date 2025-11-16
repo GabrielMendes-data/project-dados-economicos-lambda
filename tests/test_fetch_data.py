@@ -31,6 +31,7 @@ def gerar_data_aleatoria():
 
     return DateUtil(data).date_util()
 
+
 def gerar_indicador_aleatorio():
     return random.choice(["Selic", "IPCA", "Câmbio"])
 

@@ -66,35 +66,41 @@ def lambda_handler(event, context=None):
 
         # API Focus exige parâmetros adicionais
         if api_name == "focus":
-            params.update({
-                "indicator": FOCUS_INDICATORS,
-                "temporal_series": FOCUS_TEMPORAL_SERIES
-            })
+            params.update(
+                {
+                    "indicator": FOCUS_INDICATORS,
+                    "temporal_series": FOCUS_TEMPORAL_SERIES,
+                }
+            )
 
         # Chamar a factory e fazer o ETL da API
         data = FactoryAPIs.execute_api(api_name, params)
 
         # 5. SALVAR NO S3
-        if data is not None:
-            key = f"{api_name}-{datetime.now().strftime('%Y-%m-%d')}.json"
+        if data:
+            hoje = datetime.now()
+            key = f"{api_name}/{hoje.year}/{hoje.month:02d}/{api_name}-{hoje.strftime('%Y-%m-%d')}.json"
 
-            s3.put_object(
-                Bucket=BUCKET,
-                Key=key,
-                Body=json.dumps(data)
+            s3.put_object(Bucket=BUCKET, Key=key, Body=json.dumps(data))
+
+            resultados.append(
+                {"api": api_name, "registros": len(data), "params_usados": params}
             )
-
-            resultados.append({
-                "api": api_name,
-                "registros": len(data),
-                "params_usados": params
-            })
+        else:
+            resultados.append(
+                {
+                    "api": api_name,
+                    "registros": 0,
+                    "params_usados": params,
+                    "erro": "API não retornou dados",
+                }
+            )
 
     # 6. RETORNO FINAL
     return {
         "status": "ok",
         "data_util_processada": data_util,
-        "apis_executadas": resultados
+        "apis_executadas": resultados,
     }
 
 
@@ -102,11 +108,16 @@ def lambda_handler(event, context=None):
 # TESTE LOCAL
 # ============================
 if __name__ == "__main__":
-    resposta = lambda_handler(
-        event={
-            "api_name": 'selic',
-            "date": datetime.now().strftime("%Y-%m-%d")
-        }
+    # testar rodando unica api
+    resposta_single_api = lambda_handler(
+        event={"api_name": "ibge", "date": datetime.now().strftime("%Y-%m-%d")}
     )
 
-    print(json.dumps(resposta, indent=4, ensure_ascii=False))
+    print(json.dumps(resposta_single_api, indent=4, ensure_ascii=False))
+
+    # testar rodando todas api's
+    resposta_all_api = lambda_handler(
+        event={"run_all": True, "date": datetime.now().strftime("%Y-%m-%d")}
+    )
+
+    print(json.dumps(resposta_all_api, indent=4, ensure_ascii=False))

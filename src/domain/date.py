@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import yaml
 import pandas as pd
 import requests
 from typing import List, Dict
