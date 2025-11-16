@@ -1,0 +1,57 @@
+# Arquivo de configuração para endpoints
+endpoints:
+  bcb: # Banco Central do Brasil
+    selic:
+      url: "https://api.bcb.gov.br/dados/serie/bcdata.sgs.1178/dados"
+      descricao: "Taxa SELIC (BCB) - série diária."
+      params:
+        formato: "json"
+        dataInicial: { tipo: "str", obrigatorio: true, exemplo: "01/01/2023" }
+        dataFinal: { tipo: "str", obrigatorio: true, exemplo: "31/01/2023" }
+      
+    focus:
+      url: "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/"
+      descricao: "Expectativas de mercado - série anual"
+      params:
+        indicator: { tipo: "string", obrigatorio: true, opcoes: ["Selic", "IPCA", "Câmbio"] }
+        date: { tipo: "string", obrigatorio: true, exemplo: "01/01/2023" }
+        temporal_series: { tipo: "string", obrigatorio: true, opcoes: ["anual", "mensal"] }
+
+    dolar:
+      url: "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(dataCotacao=@dataCotacao)"
+      descricao: "Cotação do Dólar - série diária."
+      params:
+        '@dataCotacao': { tipo: "string", obrigatorio: true, exemplo: "'01-20-2023'" }
+
+
+  ibge:
+    ipca:
+      url: "https://apisidra.ibge.gov.br/values"
+      descricao: "IPCA (IBGE) - Variação mensal, acumulada no ano e em 12 meses."
+      formato: "json"
+      params:
+        p: { tipo: "string", obrigatorio: true, exemplo: "202509" }
+        formato: { tipo: "string", obrigatorio: true, exemplo: "json" }
+
+
+  tesouro:
+    taxas_tesouro:
+      base_url: "https://www.tesourotransparente.gov.br/ckan/dataset/df56aa42-484a-4a59-8184-7676580c81e3/resource/796d2059-14e9-44e3-80c9-2d9e30b405c1/download"
+      descricao: "Taxas do Tesouro Direto (CSV)"
+      params:
+        data: { tipo: "string", obrigatorio: true, exemplo: "20250920" }
+
+
+  fred: # Federal Reserve Bank of St. Louis
+    url: "https://api.stlouisfed.org/fred/series/observations"
+    descricao: "Séries temporais do FRED."
+    params:
+      api_key: { tipo: "string", obrigatorio: true, descricao: "Sua chave de API do FRED." }
+      series_id: { tipo: "string", obrigatorio: true, opcoes: ["SOFR", "DFEDTARL", "DFEDTARU"] }
+      file_type: { tipo: "string", obrigatorio: false, default: "json" }
+      observation_start: { tipo: "string", obrigatorio: true, exemplo: "2025-01-01" }
+      observation_end: { tipo: "string", obrigatorio: true, exemplo: "2025-01-01" }
+
+  feriados:
+    url: 'https://date.nager.at/api/v3/PublicHolidays'
+    descricao: 'Base de feriados'
