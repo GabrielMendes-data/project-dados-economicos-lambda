@@ -19,6 +19,7 @@ jobs:
       BCB_DOLAR_URL: ${{ vars.BCB_DOLAR_URL }}
       IBGE_IPCA_URL: ${{ vars.IBGE_IPCA_URL }}
       TESOURO_TAXAS_URL: ${{ vars.TESOURO_TAXAS_URL }}
+      FERIADOS_URL: ${{ vars.FERIADOS_URL }}
 
     steps:
       - name: Checkout do código
