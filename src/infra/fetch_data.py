@@ -6,16 +6,19 @@ from io import StringIO
 import csv
 from datetime import datetime
 from urllib.parse import urlencode
-
+from dotenv import load_dotenv
+import os
 
 # ============== Configuração de Log ==============
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-# ============== Carregar arquivo de endpoints ==============
-with open("api_endpoints.yaml", "r") as file:
-    file_yaml = yaml.safe_load(file)
-
-
+# ============== Configuração de Variaveis ambiente ==============
+load_dotenv()
+SELIC_URL = os.getenv("BCB_SELIC_URL")
+FOCUS_URL = os.getenv("BCB_FOCUS_URL")
+DOLAR_URL = os.getenv("BCB_DOLAR_URL")
+IPCA_URL = os.getenv("IBGE_IPCA_URL")
+TESOURO_TAXAS_URL = os.getenv("TESOURO_TAXAS_URL")
 # ============== Classe Base ==============
 class IFetchData(ABC):
 
@@ -35,7 +38,7 @@ class IFetchData(ABC):
 # ============== API Selic ==============
 class SelicFetchData(IFetchData):
     def __init__(self):
-        super().__init__(file_yaml["endpoints"]["bcb"]["selic"]["url"])
+        super().__init__(os.environ["BCB_SELIC_URL"])
 
     def parse_date(self, date_str: str) -> datetime:
         """
@@ -85,7 +88,7 @@ class FocusFetchData(IFetchData):
     da API Focus (BCB)."""
 
     def __init__(self) -> None:
-        super().__init__(file_yaml["endpoints"]["bcb"]["focus"]["url"])
+        super().__init__(os.environ["BCB_FOCUS_URL"])
 
     def parse_date(self, date_str: str) -> datetime:
         """
@@ -102,12 +105,7 @@ class FocusFetchData(IFetchData):
     def build_url(self, indicator: str, date: str, temporal_series: str) -> str:
         """Constrói URL completa para requisição da API Olinda."""
 
-        if (
-            indicator
-            not in file_yaml["endpoints"]["bcb"]["focus"]["params"]["indicator"][
-                "opcoes"
-            ]
-        ):
+        if indicator not in ["Selic", "IPCA", "Câmbio"]:
             raise ValueError(f"Indicador inválido: {indicator}")
 
         if not date or not indicator or not temporal_series:
@@ -166,7 +164,7 @@ class DolarFetchData(IFetchData):
     """Classe para coletar dados de dolar da API Dolar (BCB)."""
 
     def __init__(self) -> None:
-        super().__init__(file_yaml["endpoints"]["bcb"]["dolar"]["url"])
+        super().__init__(os.environ["BCB_DOLAR_URL"])
 
     def parse_date(self, date_str: str) -> datetime:
         """
@@ -211,7 +209,7 @@ class DolarFetchData(IFetchData):
 # ============== API IBGE ==============
 class IbgeFetchData(IFetchData):
     def __init__(self):
-        super().__init__(file_yaml["endpoints"]["ibge"]["ipca"]["url"])
+        super().__init__(os.environ["IBGE_IPCA_URL"])
 
     def parse_date(self, date_str: str) -> datetime:
         """
@@ -245,7 +243,6 @@ class IbgeFetchData(IFetchData):
         """
         try:
             url = self.build_url(date)
-            print(url)
             logging.debug(f"URL IBGE: {url}")
 
             # Faz a requisição HTTP
@@ -264,7 +261,7 @@ class TesouroFetchData(IFetchData):
     """Classe para coletar dados de taxas do Tesouro Direto."""
 
     def __init__(self) -> None:
-        super().__init__(file_yaml["endpoints"]["tesouro"]["taxas_tesouro"]["base_url"])
+        super().__init__(os.environ["TESOURO_TAXAS_URL"])
 
     def parse_date(self, date_str: str) -> datetime:
         """Tenta interpretar a data em diferentes formatos possíveis."""

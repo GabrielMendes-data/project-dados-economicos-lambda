@@ -22,6 +22,11 @@ class ColDtReferencia:
 
 class TransformFocusData:
     def __init__(self, indicators: list[str], date: str, temporal_series: str):
+        if not isinstance(indicators,list):
+            raise TypeError(
+                f"Indicator deve ser uma lista de strings."
+            )
+
         self.indicators = indicators
 
         # Adicionar proximo ano na data
@@ -143,7 +148,7 @@ class FactoryAPIs:
             return TransformSelicData(params["date"]).transform()
         elif api_name == "focus":
             return TransformFocusData(
-                params["indicators"], params["date"], params["temporal_series"]
+                params["indicator"], params["date"], params["temporal_series"]
             ).transform()
         elif api_name == "dolar":
             return TransformDolarData(params["date"]).transform()
@@ -153,3 +158,63 @@ class FactoryAPIs:
             return TransformTesouroData(params["date"]).transform()
         else:
             raise ValueError(f"API {api_name} não encontrada")
+
+
+if __name__ == "__main__":
+
+    from src.domain.date import DateUtil
+    data = DateUtil(datetime.now()).date_util()
+
+    teste_selic = FactoryAPIs.execute_api(
+        api_name='selic',
+        params={"date": data}
+    )
+
+    print('selic')
+    print(teste_selic)
+
+    teste_focus = FactoryAPIs.execute_api(
+        api_name='focus',
+        params={
+            'indicator': ['Selic'],
+            "date": data,
+            'temporal_series': 'anual'
+           },
+    )
+
+
+    print('focus')
+    print(teste_focus)
+
+    teste_dolar = FactoryAPIs.execute_api(
+        api_name='dolar',
+        params={
+            "date": data,
+           },
+    )
+
+
+    print('dolar')
+    print(teste_dolar)
+
+    teste_ibge = FactoryAPIs.execute_api(
+        api_name='ibge',
+        params={
+            "date": data,
+           },
+    )
+
+
+    print('ibge')
+    print(teste_ibge)
+
+    teste_tesouro = FactoryAPIs.execute_api(
+        api_name='tesouro',
+        params={
+            "date": data,
+           },
+    )
+
+
+    print('tesouro')
+    print(teste_tesouro)
