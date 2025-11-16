@@ -1,12 +1,25 @@
-# Imagem base oficial da AWS Lambda para Python 3.11
-FROM public.ecr.aws/lambda/python:3.11-ml
+# Base da Lambda Python 3.11
+FROM public.ecr.aws/lambda/python:3.11
 
-# Copiar todos os arquivos do projeto
+# Instalar dependências de sistema necessárias para pandas/pyarrow
+RUN yum install -y \
+    gcc \
+    gcc-c++ \
+    make \
+    python3-devel \
+    libffi-devel \
+    openssl-devel \
+    && yum clean all
+
+# Copiar somente requirements primeiro (melhor cache)
+COPY requirements.txt .
+
+# Instalar dependências Python
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# Copiar o código da Lambda
 COPY . ${LAMBDA_TASK_ROOT}
 
-# Instalar dependências
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
-
-# Definir o handler principal (arquivo.main_function)
+# Definir o handler
 CMD ["main.lambda_handler"]
