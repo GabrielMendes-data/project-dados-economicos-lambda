@@ -1,5 +1,5 @@
 # Imagem base oficial da AWS Lambda para Python 3.11
-FROM public.ecr.aws/lambda/python:3.11
+FROM public.ecr.aws/lambda/python:3.11-ml
 
 # Copiar todos os arquivos do projeto
 COPY . ${LAMBDA_TASK_ROOT}
