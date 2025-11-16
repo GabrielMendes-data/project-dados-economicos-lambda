@@ -25,13 +25,11 @@ import awswrangler as wr
 
 def salvar_parquet_s3(bucket, key, data):
     df = pd.DataFrame(data)
-
-    s3_path = f"s3://{bucket}/{key}"
-
     df.to_parquet(
-        s3_path,
+        f"s3://{bucket}/{key}",
         index=False,
-        compression="snappy"
+        compression="snappy",
+        engine="pyarrow"
     )
 
 
