@@ -1,4 +1,4 @@
-name: api-lambda-mercado CI/CD
+name: dados-mercado-lambda CI/CD
 
 on:
   push:
@@ -11,6 +11,14 @@ on:
 jobs:
   continous-Integration:
     runs-on: ubuntu-latest
+
+    env:
+      # Variáveis necessárias para os testes
+      BCB_SELIC_URL: ${{ vars.BCB_SELIC_URL }}
+      BCB_FOCUS_URL: ${{ vars.BCB_FOCUS_URL }}
+      BCB_DOLAR_URL: ${{ vars.BCB_DOLAR_URL }}
+      IBGE_IPCA_URL: ${{ vars.IBGE_IPCA_URL }}
+      TESOURO_TAXAS_URL: ${{ vars.TESOURO_TAXAS_URL }}
 
     steps:
       - name: Checkout do código
