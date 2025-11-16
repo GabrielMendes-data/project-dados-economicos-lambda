@@ -1,6 +1,10 @@
 import os
+import io
 import json
 import boto3
+import pyarrow as pa
+import pyarrow.parquet as pq
+import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -18,6 +22,22 @@ FOCUS_INDICATORS = os.environ["FOCUS_INDICATORS"].split(",")
 FOCUS_TEMPORAL_SERIES = os.environ["FOCUS_TEMPORAL_SERIES"]
 
 s3 = boto3.client("s3")
+
+
+def salvar_parquet_s3(bucket, key, data):
+    df = pd.DataFrame(data)
+
+    table = pa.Table.from_pandas(df)
+
+    buf = io.BytesIO()
+    pq.write_table(table, buf)
+    buf.seek(0)
+
+    s3.put_object(
+        Bucket=bucket,
+        Key=key,
+        Body=buf.read()
+    )
 
 
 def lambda_handler(event, context=None):
@@ -78,10 +98,15 @@ def lambda_handler(event, context=None):
 
         # 5. SALVAR NO S3
         if data:
-            hoje = datetime.now()
-            key = f"{api_name}/{hoje.year}/{hoje.month:02d}/{api_name}-{hoje.strftime('%Y-%m-%d')}.json"
+            dt_folder = datetime.strptime(data_util, "%d/%m/%Y").strftime("%Y-%m-%d")
 
-            s3.put_object(Bucket=BUCKET, Key=key, Body=json.dumps(data))
+            key = (
+                f"{api_name}/"
+                f"dt_execucao={dt_folder}/"
+                f"{api_name}-{dt_folder}.parquet"
+            )
+
+            salvar_parquet_s3(BUCKET, key, data)
 
             resultados.append(
                 {"api": api_name, "registros": len(data), "params_usados": params}
