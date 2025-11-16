@@ -1,0 +1,73 @@
+name: api-lambda-mercado CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  continous-Integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 pytest pyyaml
+
+      - name: Adicionar src ao PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/src" >> $GITHUB_ENV
+
+      - name: Executar testes (pytest)
+        run: pytest tests
+
+  continous-Deployment:
+    needs: continous-Integration
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials Action For GitHub Actions
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_URI }}
+
+      - name: Build Docker Image
+        run: |
+          docker build --platform linux/amd64 -t project_api_mercado_lambda:latest .
+
+      - name: Tag Docker Image
+        run: |
+          docker tag project_api_mercado_lambda:latest ${{ secrets.ECR_URI }}:latest
+
+      - name: Push Docker Image
+        run: |
+          docker push ${{ secrets.ECR_URI }}:latest
+
+      - name: Update Lambda Function
+        run: |
+          aws lambda update-function-code \
+            --function-name api-mercado-lambda \
+            --image-uri ${{ secrets.ECR_URI }}:latest \
+            --region ${{ secrets.AWS_REGION }}
