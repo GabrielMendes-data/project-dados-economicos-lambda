@@ -24,10 +24,14 @@ s3 = boto3.client("s3")
 import awswrangler as wr
 
 def salvar_parquet_s3(bucket, key, data):
-    wr.s3.to_parquet(
-        df=pd.DataFrame(data),
-        path=f"s3://{bucket}/{key}",
-        dataset=False
+    df = pd.DataFrame(data)
+
+    s3_path = f"s3://{bucket}/{key}"
+
+    df.to_parquet(
+        s3_path,
+        index=False,
+        compression="snappy"
     )
 
 
