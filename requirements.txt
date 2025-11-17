@@ -6,4 +6,4 @@ pytest==8.4.2
 numpy==1.26.4
 boto3==1.40.74
 numpy==2.3.0
-pyarrow==22.0.0
+fastparquet

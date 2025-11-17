@@ -2,12 +2,9 @@ import os
 import io
 import json
 import boto3
-import pyarrow as pa
-import pyarrow.parquet as pq
 import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
-
 from src.domain.transform_data import FactoryAPIs
 from src.domain.date import DateUtil
 
@@ -23,16 +20,15 @@ FOCUS_TEMPORAL_SERIES = os.environ["FOCUS_TEMPORAL_SERIES"]
 
 s3 = boto3.client("s3")
 
-
 def salvar_parquet_s3(bucket, key, data):
     df = pd.DataFrame(data)
-
-    table = pa.Table.from_pandas(df)
-
     buf = io.BytesIO()
-    pq.write_table(table, buf)
+    
+    # Salvar o DataFrame diretamente no buffer usando fastparquet
+    df.to_parquet(buf, engine="fastparquet", index=False)
+    
     buf.seek(0)
-
+    # Enviar para o S3
     s3.put_object(
         Bucket=bucket,
         Key=key,
